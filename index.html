@@ -1,96 +1,260 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#080912" />
-  <meta name="description" content="NEXORA — a futuristic digital playground for creative experiments, web tools, and mini-games." />
-  <title>NEXORA — The Digital Playground</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070812">
+  <meta name="description" content="NEXORA — a futuristic digital playground for curious minds.">
+  <title>NEXORA — Enter the Unknown</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
-  <div class="noise" aria-hidden="true"></div>
-  <canvas id="starfield" aria-hidden="true"></canvas>
-  <div class="ambient ambient-one" aria-hidden="true"></div>
-  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <div class="grain"></div>
+  <canvas id="stars"></canvas>
+  <div class="cursor-glow" id="cursorGlow"></div>
 
-  <header class="site-header" id="top">
-    <a class="brand" href="#home" aria-label="NEXORA home"><span class="brand-symbol">N<span>✳</span></span><span>NEXORA<span class="brand-dot">.</span></span></a>
-    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span></button>
-    <nav class="nav" id="nav">
-      <a href="#home" class="nav-link active">Home</a>
-      <a href="#playground" class="nav-link">Playground</a>
-      <a href="#projects" class="nav-link">Projects</a>
-      <a href="#about" class="nav-link">About</a>
+  <header>
+    <a class="brand" href="#home">
+      <span class="brand-icon">✳</span>
+      <span>NEXORA<em>.</em></span>
+    </a>
+
+    <nav id="nav">
+      <a href="#home" class="active">Home</a>
+      <a href="#lab">Playground</a>
+      <a href="#projects">Projects</a>
+      <a href="#manifesto">Manifesto</a>
     </nav>
-    <a class="header-cta" href="#playground">Enter the lab <span>↗</span></a>
+
+    <div class="header-right">
+      <button class="tiny-btn" id="commandButton">⌘ K</button>
+      <a class="tiny-btn" href="#lab">Enter the lab ↗</a>
+      <button class="tiny-btn menu" id="menuBtn" aria-label="Toggle menu">☰</button>
+    </div>
   </header>
 
   <main>
-    <section class="hero section" id="home">
+    <section class="hero" id="home">
       <div class="hero-copy reveal">
-        <div class="status-pill"><span class="status-light"></span> THE FUTURE IS PLAYABLE</div>
-        <p class="overline">A DIGITAL PLAYGROUND FOR CURIOUS MINDS</p>
-        <h1>Ideas beyond<br />the <span class="gradient-text">ordinary<span class="period">.</span></span></h1>
-        <p class="hero-description">A home for strange experiments, playful web tools, and tiny digital worlds. Explore what happens when creativity meets code.</p>
-        <div class="hero-actions"><a class="button button-primary" href="#playground">Explore the playground <span>↘</span></a><a class="text-link" href="#projects">Discover projects <span>→</span></a></div>
-        <div class="hero-footnote"><span class="tiny-line"></span> DESIGNED TO BE EXPLORED <span class="footnote-dot">✳</span></div>
+        <div class="live-pill"><i class="live-dot"></i> THE FUTURE IS PLAYABLE</div>
+        <p class="eyebrow">A DIGITAL PLAYGROUND FOR CURIOUS MINDS</p>
+        <h1>Enter the<br><span class="grad">unknown.</span></h1>
+        <p class="desc">A neon-lit corner of the internet for strange experiments, tiny games, creative tools, and ideas that refuse to sit still.</p>
+
+        <div class="actions">
+          <a class="btn" href="#lab">Explore the playground ↘</a>
+          <a class="btn secondary" href="#projects">View projects ↗</a>
+        </div>
+
+        <div class="meta">DESIGNED TO BE EXPLORED ✳ NO RULES, JUST CURIOSITY</div>
       </div>
 
-      <div class="hero-visual reveal" id="heroVisual" aria-label="Interactive 3D-inspired Nexora orb">
-        <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit orbit-c"></div>
-        <div class="planet-shadow"></div>
-        <div class="planet"><div class="planet-shine"></div><div class="planet-grid"></div><div class="planet-mark">N<span>✳</span></div></div>
-        <div class="float-chip chip-top"><span class="chip-icon">⌘</span><span><b>Creative mode</b><small>Always on</small></span><i class="chip-live"></i></div>
-        <div class="float-chip chip-bottom"><span class="pulse-icon">◉</span><span><b>Ideas in motion</b><small>Build · Play · Repeat</small></span></div>
-        <div class="coordinate coord-one">35° 41' 22.8" N</div><div class="coordinate coord-two">NX / 001 — 026</div>
-      </div>
-      <a class="scroll-cue" href="#playground"><span class="scroll-line"></span> SCROLL TO EXPLORE</a>
-    </section>
+      <div class="universe reveal" id="universe">
+        <div class="orb-scene" id="orbScene">
+          <div class="orb-halo"></div>
+          <div class="orbit"></div>
+          <div class="orbit two"><span class="orbit-dot"></span></div>
+          <div class="orbit three"></div>
+          <div class="planet"></div>
 
-    <section class="ticker" aria-label="Nexora values"><div class="ticker-track"><span>MAKE SOMETHING WEIRD</span><i>✳</i><span>PLAY WITH POSSIBILITIES</span><i>✳</i><span>BUILD THE UNEXPECTED</span><i>✳</i><span>MAKE SOMETHING WEIRD</span><i>✳</i><span>PLAY WITH POSSIBILITIES</span><i>✳</i><span>BUILD THE UNEXPECTED</span><i>✳</i></div></section>
+          <div class="float-label label-a">
+            <b>CREATIVE MODE <span class="cyan">●</span></b>
+            <small>STATUS: ALWAYS ON</small>
+          </div>
 
-    <section class="section playground-section" id="playground">
-      <div class="section-heading reveal"><div><p class="eyebrow"><span>01</span> / THE PLAYGROUND</p><h2>Less scrolling.<br /><span class="muted-heading">More exploring.</span></h2></div><p class="section-intro">Don't just look around. Try something. These little experiments are made to be clicked, played with, and enjoyed.</p></div>
-      <div class="play-grid">
-        <article class="play-card card-large reveal" data-tilt>
-          <div class="card-top"><span class="card-category"><i class="live-dot"></i> INTERACTIVE TOY</span><span class="card-number">EXP / 001</span></div>
-          <div class="orb-toy-area" id="orbToy" role="button" tabindex="0" aria-label="Click to change the energy orb"><div class="toy-ring ring-one"></div><div class="toy-ring ring-two"></div><div class="toy-orb" id="toyOrb"><span>✳</span></div><div class="toy-spark spark-one">✦</div><div class="toy-spark spark-two">·</div><div class="toy-spark spark-three">✧</div></div>
-          <div class="play-card-bottom"><div><h3>Energy orb</h3><p>Tap the orb. Change its energy.</p></div><button class="round-arrow" id="orbButton" aria-label="Change orb energy">↗</button></div>
-        </article>
-        <article class="play-card reveal" data-tilt>
-          <div class="card-top"><span class="card-category">MINI EXPERIMENT</span><span class="card-number">EXP / 002</span></div>
-          <div class="color-lab" id="colorLab"><div class="color-preview" id="colorPreview"><span id="colorHex">#8B5CF6</span></div><div class="swatches" role="group" aria-label="Choose a color"><button class="swatch selected" data-color="#8B5CF6" style="--swatch:#8B5CF6" aria-label="Purple"></button><button class="swatch" data-color="#20D9F3" style="--swatch:#20D9F3" aria-label="Cyan"></button><button class="swatch" data-color="#FF6DB3" style="--swatch:#FF6DB3" aria-label="Pink"></button><button class="swatch" data-color="#B7F36B" style="--swatch:#B7F36B" aria-label="Lime"></button><button class="swatch" data-color="#FFB454" style="--swatch:#FFB454" aria-label="Orange"></button></div></div>
-          <div class="play-card-bottom"><div><h3>Color lab</h3><p>Pick a vibe. Make it yours.</p></div><button class="round-arrow" id="randomColor" aria-label="Choose random color">⤨</button></div>
-        </article>
-        <article class="play-card reveal" data-tilt>
-          <div class="card-top"><span class="card-category">TINY GAME</span><span class="card-number">EXP / 003</span></div>
-          <div class="reaction-game"><div class="reaction-top"><span>REACTION TEST</span><span id="reactionBest">BEST —</span></div><button class="reaction-target" id="reactionTarget"><span id="reactionText">START</span><small id="reactionHint">How fast are you?</small></button><div class="reaction-footer"><span id="reactionMessage">Press start when ready.</span><span class="reaction-status"><i></i> READY</span></div></div>
-          <div class="play-card-bottom"><div><h3>Reflex check</h3><p>Wait for green. Then tap fast.</p></div><button class="round-arrow" id="reactionReset" aria-label="Reset reaction game">↻</button></div>
-        </article>
+          <div class="float-label label-b">
+            <b>NX CORE / 001</b>
+            <small>BUILD · PLAY · REPEAT</small>
+          </div>
+
+          <div class="coordinates">35° 41' 22.8" N · NX / 026</div>
+        </div>
       </div>
     </section>
 
-    <section class="section projects-section" id="projects">
-      <div class="section-heading reveal"><div><p class="eyebrow"><span>02</span> / SELECTED UNIVERSES</p><h2>Small ideas.<br /><span class="muted-heading">Big energy.</span></h2></div><p class="section-intro">A collection of concept worlds from the NEXORA universe. Pick a project to peek inside.</p></div>
-      <div class="project-filters reveal" role="group" aria-label="Filter projects"><button class="filter active" data-filter="all">All projects <span>04</span></button><button class="filter" data-filter="web">Web <span>02</span></button><button class="filter" data-filter="play">Play <span>01</span></button><button class="filter" data-filter="visual">Visuals <span>01</span></button></div>
-      <div class="projects-grid" id="projectsGrid">
-        <article class="project-card project-nova reveal" data-category="web" data-project="nova" tabindex="0" role="button" aria-label="Open Nova project details"><div class="project-art nova-art"><div class="nova-window"><div class="mini-browser"><i></i><i></i><i></i><span>NOVA / STUDIO</span></div><div class="nova-content"><span class="mini-kicker">DESIGN WITHOUT GRAVITY</span><div class="nova-headline">Think<br /><em>forward.</em></div><div class="nova-lines"><i></i><i></i></div><div class="nova-button">EXPLORE ↗</div></div><div class="nova-sphere"></div></div><span class="art-index">N° 01</span></div><div class="project-info"><div><p class="project-type">WEB EXPERIENCE</p><h3>Nova / Studio</h3></div><span class="project-arrow">↗</span></div></article>
-        <article class="project-card project-pulse reveal" data-category="play" data-project="pulse" tabindex="0" role="button" aria-label="Open Pulse project details"><div class="project-art pulse-art"><div class="sound-rings"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="pulse-core">P<span>✳</span></div><span class="pulse-caption">FEEL THE FREQUENCY</span><span class="art-index">N° 02</span></div><div class="project-info"><div><p class="project-type">INTERACTIVE PLAY</p><h3>Pulse / Frequency</h3></div><span class="project-arrow">↗</span></div></article>
-        <article class="project-card project-level reveal" data-category="visual" data-project="level" tabindex="0" role="button" aria-label="Open Level Up project details"><div class="project-art level-art"><div class="level-star">✳</div><div class="level-words"><span>NO</span><span class="level-outline">LIMITS</span></div><div class="level-sub">YOUR NEXT LEVEL STARTS HERE</div><span class="art-index">N° 03</span></div><div class="project-info"><div><p class="project-type">VISUAL IDENTITY</p><h3>Level Up / Identity</h3></div><span class="project-arrow">↗</span></div></article>
-        <article class="project-card project-nexora reveal" data-category="web" data-project="nexora" tabindex="0" role="button" aria-label="Open NEXORA project details"><div class="project-art nexora-art"><div class="dashboard"><div class="dash-side"><b>N<span>✳</span></b><i></i><i></i><i></i><i></i></div><div class="dash-main"><div class="dash-nav"><span>YOUR SPACE</span><span>•••</span></div><div class="dash-title">Welcome to<br /><b>the unknown.</b></div><div class="dash-stats"><i></i><i></i><i></i></div><div class="dash-chart"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div></div><span class="art-index">N° 04</span></div><div class="project-info"><div><p class="project-type">DIGITAL PLAYGROUND</p><h3>NEXORA / Playground</h3></div><span class="project-arrow">↗</span></div></article>
+    <div class="marquee">
+      <div class="marquee-track">
+        <span>MAKE SOMETHING WEIRD</span><i>✳</i>
+        <span>PLAY WITH POSSIBILITIES</span><i>✳</i>
+        <span>BUILD THE UNEXPECTED</span><i>✳</i>
+        <span>STAY CURIOUS</span><i>✳</i>
+        <span>MAKE SOMETHING WEIRD</span><i>✳</i>
+        <span>PLAY WITH POSSIBILITIES</span><i>✳</i>
+        <span>BUILD THE UNEXPECTED</span><i>✳</i>
+        <span>STAY CURIOUS</span><i>✳</i>
+      </div>
+    </div>
+
+    <section class="section" id="lab">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow">01 / THE PLAYGROUND</p>
+          <h2>Touch the future.<br><span class="muted">Break the routine.</span></h2>
+        </div>
+        <p class="section-intro">These experiments respond to you. Tap, test, and see what happens.</p>
+      </div>
+
+      <div class="lab-grid">
+        <article class="card reveal" data-tilt>
+          <div class="card-top"><span>✳ INTERACTIVE TOY</span><span>EXP / 001</span></div>
+          <div class="toy-space">
+            <div class="toy-rings"></div>
+            <button class="toy-core" id="toyCore" aria-label="Change energy orb">✳</button>
+          </div>
+          <div class="card-bottom">
+            <div><h3>Energy core</h3><p id="energyLabel">Tap to shift its energy.</p></div>
+            <button class="round" id="energyBtn" aria-label="Change energy">↗</button>
+          </div>
+        </article>
+
+        <article class="card reveal" data-tilt>
+          <div class="card-top"><span>◈ COLOR EXPERIMENT</span><span>EXP / 002</span></div>
+          <div class="color-preview" id="colorPreview">
+            <span id="colorCode">#A88BFF</span>
+          </div>
+          <div class="swatches">
+            <button class="swatch active" style="--sw:#A88BFF" data-color="#A88BFF" aria-label="Purple"></button>
+            <button class="swatch" style="--sw:#61F4EE" data-color="#61F4EE" aria-label="Cyan"></button>
+            <button class="swatch" style="--sw:#FF76C8" data-color="#FF76C8" aria-label="Pink"></button>
+            <button class="swatch" style="--sw:#B7F36B" data-color="#B7F36B" aria-label="Lime"></button>
+            <button class="swatch" style="--sw:#FFB454" data-color="#FFB454" aria-label="Orange"></button>
+          </div>
+          <div class="card-bottom">
+            <div><h3>Color reactor</h3><p>Choose your universe's accent.</p></div>
+            <button class="round" id="randomColor" aria-label="Random color">⤨</button>
+          </div>
+        </article>
+
+        <article class="card reveal" data-tilt>
+          <div class="card-top"><span>⚡ REFLEX MINI-GAME</span><span>EXP / 003</span></div>
+          <div class="game-box">
+            <div class="game-caption" id="gameCaption">REACTION PROTOCOL / READY</div>
+            <button class="game-target" id="gameTarget"><span id="gameText">START</span></button>
+            <div class="game-caption" id="gameMessage">Tap start. Wait for green.</div>
+          </div>
+          <div class="card-bottom">
+            <div><h3>Reflex check</h3><p id="bestScore">Personal best: —</p></div>
+            <button class="round" id="resetGame" aria-label="Reset game">↻</button>
+          </div>
+        </article>
       </div>
     </section>
 
-    <section class="manifesto-section section" id="about"><div class="manifesto-glow"></div><div class="manifesto-content reveal"><p class="eyebrow"><span>03</span> / THE NEXORA MINDSET</p><div class="manifesto-mark">✳</div><h2>The internet is<br />our <span class="gradient-text">playground.</span></h2><p>Curiosity is the brief. Experimentation is the process. Making something people remember is the point.</p><a href="#playground" class="button button-primary">Go play <span>↗</span></a></div><div class="manifesto-side-note">STAY CURIOUS<br />STAY IN MOTION<br />© NEXORA LAB</div></section>
+    <section class="section" id="projects">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow">02 / SELECTED UNIVERSES</p>
+          <h2>Ideas with<br><span class="muted">their own gravity.</span></h2>
+        </div>
+        <p class="section-intro">Four little worlds from the NEXORA universe. Pick one to open its project file.</p>
+      </div>
 
-    <section class="footer-cta section"><div class="footer-cta-inner reveal"><div><p class="eyebrow"><span>04</span> / YOUR TURN</p><h2>Got a wild idea?<br /><span class="muted-heading">Let's make it real.</span></h2></div><a class="button button-primary" href="mailto:hello@nexora.example?subject=I%20have%20an%20idea">Send an idea <span>↗</span></a></div></section>
+      <div class="filters reveal">
+        <button class="filter active" data-filter="all">All projects · 04</button>
+        <button class="filter" data-filter="web">Web · 02</button>
+        <button class="filter" data-filter="play">Play · 01</button>
+        <button class="filter" data-filter="visual">Visuals · 01</button>
+      </div>
+
+      <div class="projects">
+        <article class="project reveal" data-category="web" data-project="nova" tabindex="0" role="button">
+          <div class="art art-nova">
+            <span class="art-label">NX PROJECT / 001</span>
+            <div class="nova-window">
+              <div class="window-dots"><i></i><i></i><i></i></div>
+              <div class="nova-copy">Think<br><em>forward.</em></div>
+            </div>
+            <span class="art-num">WEB EXPERIENCE</span>
+          </div>
+          <div class="project-info"><div><small>WEB EXPERIENCE</small><h3>Nova / Studio</h3></div><span class="arrow">↗</span></div>
+        </article>
+
+        <article class="project reveal" data-category="play" data-project="pulse" tabindex="0" role="button">
+          <div class="art art-pulse">
+            <span class="art-label">NX PROJECT / 002</span>
+            <div class="wave">
+              <i style="--h:45px"></i><i style="--h:75px"></i><i style="--h:105px"></i><i style="--h:60px"></i>
+              <i style="--h:145px"></i><i style="--h:80px"></i><i style="--h:120px"></i><i style="--h:50px"></i>
+              <i style="--h:95px"></i><i style="--h:135px"></i><i style="--h:65px"></i><i style="--h:105px"></i>
+            </div>
+            <span class="art-num">INTERACTIVE PLAY</span>
+          </div>
+          <div class="project-info"><div><small>INTERACTIVE PLAY</small><h3>Pulse / Frequency</h3></div><span class="arrow">↗</span></div>
+        </article>
+
+        <article class="project reveal" data-category="visual" data-project="level" tabindex="0" role="button">
+          <div class="art art-level">
+            <span class="art-label">NX PROJECT / 003</span>
+            <div class="level-type">NO<br><span>LIMITS</span></div>
+            <span class="art-num">VISUAL IDENTITY</span>
+          </div>
+          <div class="project-info"><div><small>VISUAL IDENTITY</small><h3>Level Up / Identity</h3></div><span class="arrow">↗</span></div>
+        </article>
+
+        <article class="project reveal" data-category="web" data-project="nexora" tabindex="0" role="button">
+          <div class="art art-nex">
+            <span class="art-label">NX PROJECT / 004</span>
+            <div class="dashboard">
+              <div class="dash-side"><i></i><i></i><i></i><i></i></div>
+              <div class="dash-main">
+                <small>YOUR SPACE / LIVE</small>
+                <h4>Welcome to<br><span>the unknown.</span></h4>
+                <div class="bars">
+                  <i style="--bar:28%"></i><i style="--bar:45%"></i><i style="--bar:34%"></i><i style="--bar:67%"></i>
+                  <i style="--bar:48%"></i><i style="--bar:85%"></i><i style="--bar:70%"></i><i style="--bar:96%"></i>
+                </div>
+              </div>
+            </div>
+            <span class="art-num">DIGITAL PLAYGROUND</span>
+          </div>
+          <div class="project-info"><div><small>DIGITAL PLAYGROUND</small><h3>NEXORA / Playground</h3></div><span class="arrow">↗</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="manifesto" id="manifesto">
+      <p class="eyebrow">03 / THE NEXORA MINDSET</p>
+      <div class="sigil">✳</div>
+      <h2>The internet is<br>our <span class="grad">playground.</span></h2>
+      <p>Curiosity is the brief. Experimentation is the process. Making something people remember is the point.</p>
+      <a class="btn" href="#lab">Go make something ↗</a>
+    </section>
   </main>
 
-  <footer class="footer"><a class="brand" href="#top"><span class="brand-symbol">N<span>✳</span></span><span>NEXORA<span class="brand-dot">.</span></span></a><p>BUILT FOR THE CURIOUS <span>✳</span> © <span id="year"></span> NEXORA</p><a href="#top" class="back-top">BACK TO TOP ↑</a></footer>
+  <footer>
+    <a class="brand" href="#home"><span class="brand-icon">✳</span><span>NEXORA<em>.</em></span></a>
+    <span>BUILT FOR THE CURIOUS · © <span id="year"></span> NEXORA LAB</span>
+    <button id="topBtn">BACK TO TOP ↑</button>
+  </footer>
 
-  <div class="modal-backdrop" id="projectModal" aria-hidden="true"><section class="project-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose" aria-label="Close project details">×</button><p class="eyebrow" id="modalEyebrow">PROJECT FILE / 001</p><h2 id="modalTitle">Project title</h2><p id="modalDescription"></p><div class="modal-tags" id="modalTags"></div><button class="button button-primary" id="modalDone">Back to exploring <span>↗</span></button></section></div>
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="close" id="closeModal" aria-label="Close">×</button>
+      <p class="eyebrow" id="modalEyebrow">PROJECT FILE / 001</p>
+      <h2 id="modalTitle">Project</h2>
+      <p id="modalDescription"></p>
+      <div class="tags" id="modalTags"></div>
+      <button class="btn" id="doneModal">Back to exploring ↗</button>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="commandBackdrop" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-label="Command palette">
+      <button class="close" id="closeCommand" aria-label="Close">×</button>
+      <p class="eyebrow">NEXORA QUICK JUMP</p>
+      <h2>Where to?</h2>
+      <p>Choose a destination. Keyboard shortcut: Ctrl/⌘ + K.</p>
+      <div class="command-links">
+        <a class="btn" href="#home">⌂ Home</a>
+        <a class="btn" href="#lab">✳ Playground</a>
+        <a class="btn" href="#projects">▦ Projects</a>
+        <a class="btn" href="#manifesto">◈ Manifesto</a>
+      </div>
+    </section>
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="js/script.js"></script>
 </body>
 </html>
