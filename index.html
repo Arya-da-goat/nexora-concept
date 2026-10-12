@@ -7,6 +7,43 @@
   <meta name="description" content="NEXORA — a futuristic digital playground for curious minds.">
   <title>NEXORA — Enter the Unknown</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    @media (max-width: 680px) {
+      .universe {
+        min-height: 320px !important;
+        display: grid !important;
+      }
+
+      .orb-scene {
+        width: min(310px, 86vw) !important;
+      }
+
+      .planet {
+        width: 46% !important;
+      }
+
+      .label-a,
+      .label-b {
+        transform: scale(.82);
+      }
+
+      .label-a {
+        right: 2% !important;
+        top: 8% !important;
+      }
+
+      .label-b {
+        left: 0 !important;
+        bottom: 8% !important;
+      }
+
+      .coordinates {
+        right: 10px !important;
+        bottom: 10px !important;
+        font-size: 7px !important;
+      }
+    }
+  </style>
   <script src="script.js" defer></script>
 </head>
 <body>
