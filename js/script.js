@@ -1,303 +1,440 @@
 (() => {
+  'use strict';
+
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-  
+
   $('#year').textContent = new Date().getFullYear();
 
-  // Mobile navigation
-  const menuToggle = $('#menuToggle'), nav = $('#nav');
-  menuToggle.addEventListener('click', () => {
-    const open = menuToggle.getAttribute('aria-expanded') !== 'true';
-    menuToggle.setAttribute('aria-expanded', String(open)); 
-    nav.classList.toggle('open', open);
-  });
-  $$('.nav-link').forEach(link => link.addEventListener('click', () => {
-    nav.classList.remove('open'); 
-    menuToggle.setAttribute('aria-expanded', 'false');
-  }));
+  // Toast notifications
+  const toast = $('#toast');
+  let toastTimer;
 
-  // Gentle starfield canvas
-  const canvas = $('#starfield'), ctx = canvas.getContext('2d');
-  let stars = [], width = 0, height = 0;
-  
-  function resizeCanvas() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    width = window.innerWidth; 
-    height = Math.min(900, Math.max(600, document.documentElement.scrollHeight * .38));
-    canvas.width = width * dpr; 
-    canvas.height = height * dpr; 
-    canvas.style.width = width + 'px'; 
-    canvas.style.height = height + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    stars = Array.from({length: Math.min(115, Math.floor(width / 8))}, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: Math.random() * 1.2 + .25,
-      a: Math.random() * .55 + .12,
-      s: Math.random() * .006 + .001
-    }));
-  }
-  
-  function drawStars() {
-    ctx.clearRect(0, 0, width, height);
-    stars.forEach(star => { 
-      star.a += star.s; 
-      if(star.a > .72 || star.a < .12) star.s *= -1; 
-      ctx.beginPath(); 
-      ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2); 
-      ctx.fillStyle = `rgba(177,207,255,${star.a})`; 
-      ctx.fill(); 
-    });
-    requestAnimationFrame(drawStars);
-  }
-  
-  resizeCanvas(); 
-  drawStars(); 
-  window.addEventListener('resize', resizeCanvas);
-
-  // Reveal content as it enters view
-  const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-    if(entry.isIntersecting){ 
-      entry.target.classList.add('visible'); 
-      revealObserver.unobserve(entry.target); 
-    }
-  }), {threshold:.12});
-  
-  $$('.reveal').forEach((el, i) => { 
-    el.style.transitionDelay = `${Math.min(i % 4, 3) * 70}ms`; 
-    revealObserver.observe(el); 
-  });
-
-  // Active navigation link
-  const sections = $$('main section[id]');
-  const sectionObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-    if(entry.isIntersecting){ 
-      $$('.nav-link').forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id)); 
-    }
-  }), {rootMargin:'-35% 0px -55% 0px'});
-  sections.forEach(section => sectionObserver.observe(section));
-
-  // Card spotlight + subtle tilt on pointer devices
-  $$('.play-card[data-tilt]').forEach(card => {
-    card.addEventListener('pointermove', e => {
-      const r = card.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-      card.style.setProperty('--mx', `${x}px`); 
-      card.style.setProperty('--my', `${y}px`);
-      if(e.pointerType === 'mouse' && window.innerWidth > 900){ 
-        card.style.transform = `perspective(800px) rotateX(${((y/r.height)-.5)*-2.4}deg) rotateY(${((x/r.width)-.5)*2.4}deg) translateY(-2px)`;
-      }
-    });
-    card.addEventListener('pointerleave', () => { 
-      card.style.transform = ''; 
-    });
-  });
-
-  // Orb toy
-  const orb = $('#toyOrb'), orbToy = $('#orbToy'); 
-  let energy = 0;
-  
-  function changeOrb(){ 
-    energy = (energy + 1) % 4; 
-    orb.className = 'toy-orb' + (energy ? ` energy-${energy}` : ''); 
-    const names=['Calm energy','Solar energy','Ocean energy','Cosmic energy']; 
-    showToast(names[energy]);
-  }
-  
-  orbToy.addEventListener('click', changeOrb); 
-  orbToy.addEventListener('keydown', e => { 
-    if(e.key === 'Enter' || e.key === ' '){ 
-      e.preventDefault(); 
-      changeOrb(); 
-    } 
-  }); 
-  
-  $('#orbButton').addEventListener('click', changeOrb);
-
-  // Color lab
-  const colorPreview = $('#colorPreview'), colorHex = $('#colorHex');
-  
-  function setColor(color){ 
-    colorPreview.style.setProperty('--preview', color); 
-    colorHex.textContent = color.toUpperCase(); 
-    $$('.swatch').forEach(s => s.classList.toggle('selected', s.dataset.color === color));
-  }
-  
-  $$('.swatch').forEach(s => s.addEventListener('click', () => setColor(s.dataset.color)));
-  $('#randomColor').addEventListener('click', () => { 
-    const colors = $$('.swatch').map(s => s.dataset.color); 
-    setColor(colors[Math.floor(Math.random() * colors.length)]); 
-  });
-
-  // Reaction time mini-game
-  const target = $('#reactionTarget'), 
-        reactionText = $('#reactionText'), 
-        reactionHint = $('#reactionHint'), 
-        reactionMessage = $('#reactionMessage'), 
-        reactionBest = $('#reactionBest');
-  
-  let gameState = 'idle', startTimer = null, startedAt = 0, best = null;
-  
-  try { 
-    best = Number(localStorage.getItem('nexora-reaction-best')) || null; 
-  } catch(e) {}
-  
-  function updateBest(){ 
-    reactionBest.textContent = best ? `BEST ${best}ms` : 'BEST —'; 
-  }
-  updateBest();
-  
-  function startReaction(){ 
-    clearTimeout(startTimer); 
-    gameState = 'waiting'; 
-    target.className = 'reaction-target waiting'; 
-    reactionText.textContent = 'WAIT…'; 
-    reactionHint.textContent = 'Tap only when it turns green.'; 
-    reactionMessage.textContent = '';
-    
-    startTimer = setTimeout(() => {
-      if(gameState === 'waiting') {
-        gameState = 'go';
-        target.className = 'reaction-target go';
-        reactionText.textContent = 'GO!';
-        reactionHint.textContent = 'Tap as fast as you can!';
-        startedAt = performance.now();
-      }
-    }, Math.random() * 3000 + 1000);
-  }
-  
-  target.addEventListener('click', () => {
-    if(gameState === 'idle' || gameState === 'done' || gameState === 'early'){ 
-      startReaction(); 
-      return; 
-    }
-    if(gameState === 'waiting'){ 
-      clearTimeout(startTimer); 
-      gameState = 'early'; 
-      target.className = 'reaction-target'; 
-      reactionText.textContent = 'TOO SOON'; 
-      reactionHint.textContent = 'Patience, pilot.'; 
-      reactionMessage.textContent = '';
-      return;
-    }
-    if(gameState === 'go'){ 
-      const elapsed = Math.round(performance.now() - startedAt); 
-      gameState = 'done'; 
-      target.className = 'reaction-target'; 
-      reactionText.textContent = `${elapsed} ms`; 
-      reactionHint.textContent = 'Tap again to try again.'; 
-      reactionMessage.textContent = best && elapsed < best ? `NEW RECORD! 🎉` : '';
-      
-      if(!best || elapsed < best) {
-        best = elapsed;
-        try { 
-          localStorage.setItem('nexora-reaction-best', best); 
-        } catch(e) {}
-        updateBest();
-      }
-    }
-  });
-  
-  $('#reactionReset').addEventListener('click', () => { 
-    clearTimeout(startTimer); 
-    gameState = 'idle'; 
-    target.className = 'reaction-target'; 
-    reactionText.textContent = 'START'; 
-    reactionHint.textContent = 'Tap to begin.'; 
-    reactionMessage.textContent = '';
-  });
-
-  // Project filters
-  $$('.filter').forEach(button => button.addEventListener('click', () => {
-    $$('.filter').forEach(b => b.classList.toggle('active', b === button));
-    const filter = button.dataset.filter;
-    $$('.project-card').forEach(card => card.classList.toggle('filtered-out', filter !== 'all' && card.dataset.category !== filter));
-  }));
-
-  // Project detail modal
-  const projectData = {
-    nova: {
-      num: 'PROJECT FILE / 001',
-      title: 'Nova / Studio',
-      description: 'A sleek concept for a creative studio website. Nova pairs a confident editorial layout with soft gradients, floating shapes, and interactive elements that celebrate bold typography and experimental color.'
-    },
-    pulse: {
-      num: 'PROJECT FILE / 002',
-      title: 'Pulse / Frequency',
-      description: 'An interactive playground concept inspired by sound, rhythm, and motion. Pulse imagines a digital space where visuals respond to audio, creating a synesthetic experience of music and code.'
-    },
-    level: {
-      num: 'PROJECT FILE / 003',
-      title: 'Level Up / Identity',
-      description: 'A bold visual identity direction built around gaming culture, sharp typography, electric color, and the feeling of unlocking something new. Sharp edges meet playful interaction.'
-    },
-    nexora: {
-      num: 'PROJECT FILE / 004',
-      title: 'NEXORA / Playground',
-      description: 'The home base for the curious: tiny web experiments, playful interactions, and concept worlds in one neon-lit digital playground. Where ideas play and creativity lives.'
-    }
-  };
-  
-  const modal = $('#projectModal'); 
-  let lastFocus = null;
-  
-  function openProject(key){
-    const data = projectData[key];
-    if(!data) return;
-    lastFocus = document.activeElement;
-    $('#modalEyebrow').textContent = data.num;
-    $('#modalTitle').textContent = data.title;
-    $('#modalDescription').textContent = data.description;
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden','false');
-    document.body.classList.add('modal-open');
-    $('#modalClose').focus();
-  }
-  
-  function closeProject(){
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden','true');
-    document.body.classList.remove('modal-open');
-    if(lastFocus) lastFocus.focus();
-  }
-  
-  $$('.project-card').forEach(card=>{
-    card.addEventListener('click',()=>openProject(card.dataset.project));
-    card.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){
-        e.preventDefault();
-        openProject(card.dataset.project);
-      }
-    });
-  });
-  
-  $('#modalClose').addEventListener('click', closeProject);
-  $('#modalDone').addEventListener('click', closeProject);
-  modal.addEventListener('click', e=>{
-    if(e.target === modal) closeProject();
-  });
-  document.addEventListener('keydown', e=>{
-    if(e.key==='Escape' && modal.classList.contains('open')) closeProject();
-  });
-
-  let toastTimer; 
-  function showToast(message){
-    const toast = $('#toast');
+  function notify(message) {
     toast.textContent = message;
     toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> toast.classList.remove('show'), 3000);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1900);
   }
 
-  // Hero parallax, intentionally subtle
-  const heroVisual = $('#heroVisual');
-  heroVisual.addEventListener('pointermove', e=>{
-    if(e.pointerType !== 'mouse' || window.innerWidth < 800) return;
-    const r = heroVisual.getBoundingClientRect();
-    const rx = (e.clientY - r.top) / r.height - .5,
-          ry = (e.clientX - r.left) / r.width - .5;
-    $('.planet', heroVisual).style.transform = `rotateX(${rx * 8}deg) rotateY(${ry * 8}deg)`;
+  // Animated starfield
+  const canvas = $('#stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  let w = 0;
+  let h = 0;
+  let raf = 0;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.7);
+    w = innerWidth;
+    h = innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    stars = Array.from(
+      { length: Math.min(110, Math.floor(w / 8)) },
+      () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        z: Math.random() * 1.5 + 0.3,
+        a: Math.random() * 0.65 + 0.1,
+        v: Math.random() * 0.22 + 0.04
+      })
+    );
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+
+    for (const star of stars) {
+      star.y += star.v;
+
+      if (star.y > h) {
+        star.y = 0;
+        star.x = Math.random() * w;
+      }
+
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.z, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(172,224,255,${star.a})`;
+      ctx.fill();
+    }
+
+    raf = requestAnimationFrame(draw);
+  }
+
+  resize();
+  draw();
+
+  window.addEventListener('resize', resize, { passive: true });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(raf);
+    } else {
+      draw();
+    }
   });
-  heroVisual.addEventListener('pointerleave', ()=>{
-    $('.planet', heroVisual).style.transform = '';
+
+  // Cursor glow and 3D planet movement
+  const glow = $('#cursorGlow');
+  const scene = $('#orbScene');
+
+  window.addEventListener('pointermove', event => {
+    glow.style.left = event.clientX + 'px';
+    glow.style.top = event.clientY + 'px';
+
+    if (event.pointerType === 'mouse' && innerWidth > 800) {
+      const rect = $('#universe').getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5;
+      const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+      scene.style.transform =
+        `rotateY(${x * 8}deg) rotateX(${y * -6}deg)`;
+    }
+  }, { passive: true });
+
+  $('#universe').addEventListener('pointerleave', () => {
+    scene.style.transform = '';
+  });
+
+  // Responsive navigation
+  const menu = $('#menuBtn');
+  const nav = $('#nav');
+
+  menu.addEventListener('click', () => {
+    const open = menu.getAttribute('aria-expanded') !== 'true';
+    menu.setAttribute('aria-expanded', String(open));
+    nav.classList.toggle('open', open);
+    menu.textContent = open ? '×' : '☰';
+  });
+
+  $$('nav a').forEach(link => {
+    link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      menu.setAttribute('aria-expanded', 'false');
+      menu.textContent = '☰';
+    });
+  });
+
+  // Scroll reveal and active navigation
+  if ('IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    $$('.reveal').forEach((element, index) => {
+      element.style.transitionDelay = (index % 4) * 65 + 'ms';
+      revealObserver.observe(element);
+    });
+
+    const sectionObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          $$('nav a').forEach(link => {
+            link.classList.toggle(
+              'active',
+              link.getAttribute('href') === '#' + entry.target.id
+            );
+          });
+        }
+      });
+    }, { rootMargin: '-35% 0px -55% 0px' });
+
+    $$('main section[id]').forEach(section => sectionObserver.observe(section));
+  } else {
+    $$('.reveal').forEach(element => element.classList.add('visible'));
+  }
+
+  // Interactive card glow
+  $$('[data-tilt]').forEach(card => {
+    card.addEventListener('pointermove', event => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (event.clientX - rect.left) + 'px');
+      card.style.setProperty('--my', (event.clientY - rect.top) + 'px');
+    });
+  });
+
+  // Energy core
+  let energy = 0;
+  const energyNames = [
+    'Calm energy',
+    'Solar energy',
+    'Ocean energy',
+    'Cosmic energy'
+  ];
+
+  function changeEnergy() {
+    energy = (energy + 1) % 4;
+    $('#toyCore').className = 'toy-core' + (energy ? ' energy' + energy : '');
+    $('#energyLabel').textContent = energyNames[energy] + '. Tap to shift again.';
+    notify(energyNames[energy]);
+  }
+
+  $('#toyCore').addEventListener('click', changeEnergy);
+  $('#energyBtn').addEventListener('click', changeEnergy);
+
+  // Color reactor
+  function setColor(color) {
+    document.documentElement.style.setProperty('--cyan', color);
+    $('#colorPreview').style.setProperty('--chosen', color);
+    $('#colorCode').textContent = color.toUpperCase();
+
+    $$('.swatch').forEach(button => {
+      button.classList.toggle(
+        'active',
+        button.dataset.color.toUpperCase() === color.toUpperCase()
+      );
+    });
+
+    notify('Accent updated: ' + color.toUpperCase());
+  }
+
+  $$('.swatch').forEach(button => {
+    button.addEventListener('click', () => setColor(button.dataset.color));
+  });
+
+  $('#randomColor').addEventListener('click', () => {
+    const colors = $$('.swatch').map(button => button.dataset.color);
+    setColor(colors[Math.floor(Math.random() * colors.length)]);
+  });
+
+  // Reaction-time mini-game
+  const target = $('#gameTarget');
+  let state = 'idle';
+  let timer = 0;
+  let startAt = 0;
+  let best = null;
+
+  try {
+    best = Number(localStorage.getItem('nexora-best')) || null;
+  } catch (error) {
+    // Storage may be unavailable in private browsing.
+  }
+
+  function updateBest() {
+    $('#bestScore').textContent = 'Personal best: ' + (best ? best + ' ms' : '—');
+  }
+
+  updateBest();
+
+  function resetGame() {
+    clearTimeout(timer);
+    state = 'idle';
+    target.className = 'game-target';
+    $('#gameText').textContent = 'START';
+    $('#gameCaption').textContent = 'REACTION PROTOCOL / READY';
+    $('#gameMessage').textContent = 'Tap start. Wait for green.';
+  }
+
+  target.addEventListener('click', () => {
+    if (state === 'idle' || state === 'done' || state === 'early') {
+      clearTimeout(timer);
+      state = 'wait';
+      target.className = 'game-target wait';
+      $('#gameText').textContent = 'WAIT';
+      $('#gameCaption').textContent = 'SIGNAL INCOMING…';
+      $('#gameMessage').textContent = 'Do not tap yet';
+
+      timer = setTimeout(() => {
+        if (state !== 'wait') return;
+
+        state = 'go';
+        startAt = performance.now();
+        target.className = 'game-target go';
+        $('#gameText').textContent = 'TAP!';
+        $('#gameCaption').textContent = 'SIGNAL DETECTED / GO';
+        $('#gameMessage').textContent = 'NOW NOW NOW';
+      }, 900 + Math.random() * 2400);
+
+      return;
+    }
+
+    if (state === 'wait') {
+      clearTimeout(timer);
+      state = 'early';
+      target.className = 'game-target';
+      $('#gameText').textContent = 'TOO SOON';
+      $('#gameCaption').textContent = 'FALSE START';
+      $('#gameMessage').textContent = 'Tap to try again';
+      return;
+    }
+
+    if (state === 'go') {
+      const milliseconds = Math.round(performance.now() - startAt);
+      state = 'done';
+      target.className = 'game-target';
+      $('#gameText').textContent = milliseconds + 'ms';
+      $('#gameCaption').textContent = 'REACTION RECORDED';
+
+      $('#gameMessage').textContent =
+        milliseconds < 220 ? 'Insane reflexes!' :
+        milliseconds < 320 ? 'Nice reaction. Try to beat it.' :
+        'Again. You can go faster.';
+
+      if (!best || milliseconds < best) {
+        best = milliseconds;
+        updateBest();
+
+        try {
+          localStorage.setItem('nexora-best', String(best));
+        } catch (error) {
+          // Game remains playable without storage.
+        }
+
+        notify('New personal best: ' + milliseconds + ' ms!');
+      }
+    }
+  });
+
+  $('#resetGame').addEventListener('click', resetGame);
+
+  // Project filters
+  $$('.filter').forEach(button => {
+    button.addEventListener('click', () => {
+      $$('.filter').forEach(item => item.classList.toggle('active', item === button));
+
+      $$('.project').forEach(project => {
+        project.classList.toggle(
+          'filtered',
+          button.dataset.filter !== 'all' &&
+          project.dataset.category !== button.dataset.filter
+        );
+      });
+    });
+  });
+
+  // Project detail dialogs
+  const projects = {
+    nova: {
+      n: 'PROJECT FILE / 001',
+      title: 'Nova / Studio',
+      desc: 'A future-facing creative studio website concept: bold editorial typography, soft cosmic gradients, and a focused journey from first impression to action.',
+      tags: ['Web design', 'Responsive UI', 'Visual concept']
+    },
+    pulse: {
+      n: 'PROJECT FILE / 002',
+      title: 'Pulse / Frequency',
+      desc: 'An interactive visual playground inspired by sound, rhythm, and motion. A study in making interfaces feel alive rather than static.',
+      tags: ['Interaction', 'Motion design', 'Play']
+    },
+    level: {
+      n: 'PROJECT FILE / 003',
+      title: 'Level Up / Identity',
+      desc: 'A punchy visual identity direction inspired by gaming culture, achievement systems, electric color, and the feeling of reaching the next level.',
+      tags: ['Graphic design', 'Typography', 'Gaming']
+    },
+    nexora: {
+      n: 'PROJECT FILE / 004',
+      title: 'NEXORA / Playground',
+      desc: 'The home base for curious minds: tiny experiments, playful interactions, and concept worlds in one neon-lit digital space.',
+      tags: ['HTML', 'CSS', 'JavaScript', 'Interactive']
+    }
+  };
+
+  let lastFocus = null;
+  const modal = $('#modalBackdrop');
+
+  function openProject(key) {
+    const project = projects[key];
+    if (!project) return;
+
+    lastFocus = document.activeElement;
+    $('#modalEyebrow').textContent = project.n;
+    $('#modalTitle').textContent = project.title;
+    $('#modalDescription').textContent = project.desc;
+
+    const tags = $('#modalTags');
+    tags.replaceChildren();
+
+    project.tags.forEach(tag => {
+      const element = document.createElement('span');
+      element.textContent = tag;
+      tags.appendChild(element);
+    });
+
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    $('#closeModal').focus();
+  }
+
+  function closeProject() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+
+    if (lastFocus) lastFocus.focus();
+  }
+
+  $$('.project').forEach(project => {
+    project.addEventListener('click', () => openProject(project.dataset.project));
+
+    project.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openProject(project.dataset.project);
+      }
+    });
+  });
+
+  $('#closeModal').addEventListener('click', closeProject);
+  $('#doneModal').addEventListener('click', closeProject);
+
+  modal.addEventListener('click', event => {
+    if (event.target === modal) closeProject();
+  });
+
+  // Command palette
+  const command = $('#commandBackdrop');
+
+  function openCommand() {
+    command.classList.add('open');
+    command.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    $('#closeCommand').focus();
+  }
+
+  function closeCommand() {
+    command.classList.remove('open');
+    command.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  $('#commandButton').addEventListener('click', openCommand);
+  $('#closeCommand').addEventListener('click', closeCommand);
+
+  command.addEventListener('click', event => {
+    if (event.target === command) closeCommand();
+  });
+
+  $$('.command-links a').forEach(link => {
+    link.addEventListener('click', closeCommand);
+  });
+
+  document.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      openCommand();
+    }
+
+    if (event.key === 'Escape') {
+      if (modal.classList.contains('open')) closeProject();
+      if (command.classList.contains('open')) closeCommand();
+    }
+  });
+
+  // Back to top
+  $('#topBtn').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 })();
